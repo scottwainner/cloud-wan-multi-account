@@ -4,13 +4,13 @@ Description: Hosted Cloud WAN
 Parameters:
   CustomerName:
     Type: String
-    Default: "tenant-<x>"
+    Default: "tenant-name"
   InsideCidrBlocks:
     Type: String
     Default: "192.168.0.0/16"
   AsnRanges:
     Type: String
-    Description: All Peers Must Reside Within Range
+    Description: All Core Network Edge Must Reside Within Range
     Default: "64530-64534"
 
 
