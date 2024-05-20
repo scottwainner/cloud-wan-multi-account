@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  PrincipalAccounts:
+    Type: String
+    Default: "CustomerAccountNumber"
+  CoreNetworkResourceArns:
+    Type: String
+    Default: "arn:aws:networkmanager::<AccountNumber>:core-network/<CoreNetworkID>"
+  CustomerName:
+    Type: String
+    Default: "HostedAcct-Tenant-<x>"
+
+Resources:
+  CoreNetworkShare:
+    Type: "AWS::RAM::ResourceShare"
+    Properties:
+      AllowExternalPrincipals: true
+      Name: !Ref CustomerName
+      Principals: 
+        - !Ref PrincipalAccounts
+      ResourceArns: 
+        - !Ref CoreNetworkResourceArns
+      Tags: 
+        - Key: CoreNetwork
+          Value: !Ref CustomerName
+
+Outputs:
+  CoreNetworkRAMshare:
+    Value: !GetAtt CoreNetworkShare.Arn
+    Description: Core Network Share ARN

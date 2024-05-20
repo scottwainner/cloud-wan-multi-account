@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Hosted Cloud WAN
+Parameters:
+  CustomerName:
+    Type: String
+    Default: "tenant-<x>"
+  InsideCidrBlocks:
+    Type: String
+    Default: "192.168.0.0/16"
+  AsnRanges:
+    Type: String
+    Description: All Peers Must Reside Within Range
+    Default: "64530-64534"
+
+
+Resources:
+  GlobalNetwork:
+    Type: AWS::NetworkManager::GlobalNetwork
+    Properties:
+      Description: Global Network - Cloud WAN Hosted
+      Tags:
+        - Key: Customer
+          Value: !Ref CustomerName
+        - Key: Name
+          Value: Hosted-GlobalNetwork
+        - Key: Service
+          Value: MgdCloudWAN
+        - Key: Role
+          Value: Managed
+
+  CoreNetwork:
+    Type: AWS::NetworkManager::CoreNetwork
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3002
+    Properties:
+      GlobalNetworkId: !Ref GlobalNetwork
+      Description: Core Network - Cloud WAN Hosted
+      Tags:
+        - Key: Customer
+          Value: !Ref CustomerName
+        - Key: Name
+          Value: Hosted-CoreNetwork
+        - Key: Service
+          Value: MgdCloudWAN
+      PolicyDocument:
+        version: "2021.12"
+        core-network-configuration:
+          vpn-ecmp-support: false
+          inside-cidr-blocks:
+            - !Ref InsideCidrBlocks
+          asn-ranges:
+            - !Ref AsnRanges
+          edge-locations:
+            - location: us-east-1
+              asn: 64530
+              inside-cidr-blocks:
+                - 192.168.200.0/24
+            - location: us-east-2
+              asn: 64531
+              inside-cidr-blocks:
+                - 192.168.201.0/24
+        segments:
+          - name: management
+            require-attachment-acceptance: false
+            isolate-attachments: false
+            edge-locations:
+              - us-east-1
+              - us-east-2
+          - name: customerdata
+            require-attachment-acceptance: false
+            edge-locations:
+              - us-east-1
+              - us-east-2
+          - name: sharedservices
+            require-attachment-acceptance: false
+            edge-locations:
+              - us-east-1
+              - us-east-2
+        attachment-policies:
+          - rule-number: 100
+            condition-logic: and
+            conditions:
+              - type: tag-value
+                operator: equals
+                key: segment
+                value: management
+            action:
+              association-method: constant
+              segment: management
+          - rule-number: 200
+            condition-logic: and
+            conditions:
+              - type: tag-value
+                operator: equals
+                key: segment
+                value: customerdata
+            action:
+              association-method: constant
+              segment: customerdata
+          - rule-number: 300
+            condition-logic: and
+            conditions:
+              - type: tag-value
+                operator: equals
+                key: segment
+                value: sharedservices
+            action:
+              association-method: constant
+              segment: sharedservices
+        segment-actions:
+          - action: share
+            mode: attachment-route
+            segment: sharedservices
+            share-with: "*"
+  CoreNetworkIdentifier:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Name: !Sub "/CoreNetworkIdentifier"
+      Type: String
+      Value: !Ref CoreNetwork
+
+
+Outputs:
+  CoreNetworkId:
+    Value: !GetAtt CoreNetwork.CoreNetworkId
+    Description: Core Network Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-CoreNetworkId"
+  CoreNetworkArn:
+    Value: !GetAtt CoreNetwork.CoreNetworkArn
+    Description: Core Network ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-CoreNetworkArn"
+  CustomerName:
+    Value: !Ref CustomerName
+    Description: Name of Customer 
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-CustomerName"
+

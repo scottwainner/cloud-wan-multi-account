@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Hosted Cloud WAN Connect
+Parameters:
+  VpcAttachment:
+    Type: String
+    Description: Attachment ID of the VpcAttachment
+    Default: attachment-07af16550f2a97d3e
+  CoreNetworkEdge:
+    Type: String
+    Description: Region where the CNE Resides
+    Default: us-east-1
+  CoreNetworkIdentifier:
+    Type: String
+    Description: CoreNetworkIdentifier
+    Default: core-network-04144a56d246ae013
+  SegmentName:
+    Type: String
+    Description: Segment Segment
+    Default: sharedservices
+  Encapsulation:
+    Type: String
+    Description: Encapsulation = GRE | NO_ENCAP
+    AllowedValues:
+      - "GRE"
+      - "NO_ENCAP"
+    Default: 'GRE'
+  BgpPeerAsn:
+    Type: Number
+    Description: Peer ASN
+    Default: 64599
+  CneCoreAddress:
+    Type: String
+    Description: IP Address for CNE
+    Default: 192.168.200.89
+  CnePeerAddress:
+    Type: String
+    Description: IP Address for CNE Peer
+    Default: 172.31.0.5
+  TunnelInsideCidr:
+    Type: String
+    Description: IP CIDR Assigned to Tunnel Interfaces 169.254.x.x/29
+    Default: 169.254.200.16/29
+Resources:
+  ConnectAttachment:
+    Type: AWS::NetworkManager::ConnectAttachment
+    Description: HostedAcct-Connect-Attachment
+    Properties:
+      CoreNetworkId: !Ref CoreNetworkIdentifier
+      EdgeLocation: !Ref CoreNetworkEdge
+      Options:
+        Protocol: !Ref Encapsulation
+      Tags:
+        - Key: Name
+          Value: HostedAcct-Connect-Attachment-CustomerData
+        - Key: segment
+          Value: !Ref SegmentName
+      TransportAttachmentId: !Ref VpcAttachment
+  ConnectPeer:
+    Type: AWS::NetworkManager::ConnectPeer
+    Description: ConnectPeer
+    Properties:
+      ConnectAttachmentId: !Ref ConnectAttachment
+      BgpOptions:
+        PeerAsn: !Ref BgpPeerAsn
+      CoreNetworkAddress: !Ref CneCoreAddress
+      InsideCidrBlocks:
+        - !Ref TunnelInsideCidr
+      PeerAddress: !Ref CnePeerAddress
+      Tags: 
+        - Key: Name
+          Value: HostedAcct-Connect-Peer-CustomerData
+        - Key: segment
+          Value: !Ref SegmentName
+  ConnectAttachmentIdentifier:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Name: !Sub "/ConnectAttachmentIdentifier/cne-${CoreNetworkEdge}/segment-${SegmentName}"
+      Type: String
+      Value: !Ref ConnectAttachment
+  ConnectPeerIdentifier:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Name: !Sub "/ConnectPeerIdentifier/cne-${CoreNetworkEdge}/AttachId-${ConnectAttachment}/segment-${SegmentName}"
+      Type: String
+      Value: !Ref ConnectPeer
+
+
+Outputs:
+  ConnectAttachment:
+    Value: !GetAtt ConnectAttachment.AttachmentId
+    Description: CNE Connect Attachment Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-Connect-AttachmentId"
+  ConnectAttachmentSegment:
+    Value: !GetAtt ConnectAttachment.SegmentName
+    Description: CNE Connect Segment
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-Connect-AttachmentSegment"
+  ConnectPeer:
+    Value: !GetAtt ConnectPeer.ConnectPeerId
+    Description: CNE Connect Peer ID
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-Connect-PeerId"

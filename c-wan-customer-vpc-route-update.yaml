@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Hosted Cloud VPC Attachment
+
+Parameters:
+  CoreNetworkIdentifier:
+    Type: String
+    Description: Core Network Identifier
+    Default: core-network-04144a56d246ae013
+  CoreNetworkAccount:
+    Type: String
+    Description: Account Number of Core Network Owner
+    Default: 999424033486
+  RouteTableIdentifier:
+    Type: String
+    Description: RouteTable Identifier
+    Default: rtb-ae7553d0
+  NetworkCidrBlockReachedByCoreNetwork:
+    Type: String
+    Description: X.X.X.X/Y
+    Default: 192.168.0.0/16
+  EdgeLocation:
+    Type: String
+    Description: CNE Location
+    Default: us-east-1
+
+Resources:
+  CoreNetworkRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      CoreNetworkArn: !Sub
+        - arn:aws:networkmanager::${AccountId}:core-network/${CoreNetId}
+        - AccountId: !Ref CoreNetworkAccount 
+          CoreNetId: !Ref CoreNetworkIdentifier
+      DestinationCidrBlock: !Ref NetworkCidrBlockReachedByCoreNetwork
+      RouteTableId: !Ref RouteTableIdentifier
+

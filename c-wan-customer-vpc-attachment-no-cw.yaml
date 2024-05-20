@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Hosted Cloud VPC Attachment Execution ONLY in us-west-2
+
+Parameters:
+  CoreNetworkIdentifier:
+    Type: String
+    Description: Core Network Identifier
+    Default: core-network-04144a56d246ae013
+  VpcArnIdentifier:
+    Type: String
+    Description: VPC Arn
+    Default: arn:aws:ec2:us-east-1:557514342934:vpc/vpc-2e67bf53
+  SubnetArnIdentifiers:
+    Type: String
+    Description: Subnet Arn
+    Default: arn:aws:ec2:us-east-1:557514342934:subnet/subnet-d4a629b2
+  SegmentId:
+    Type: String
+    Description: Segment for VpcAttachment
+    AllowedValues:
+      - "sharedservices"
+      - "customerdata"
+      - "management"
+    Default: sharedservices
+  EdgeLocation:
+    Type: String
+    Description: CNE Location
+    Default: us-east-1
+
+Resources:
+  VpcAttachment:
+    Type: 'AWS::NetworkManager::VpcAttachment'
+    Description: CustomerAcct-VPC-Attachment
+    Properties:
+      CoreNetworkId: !Ref CoreNetworkIdentifier
+      EdgeLocation: !Ref EdgeLocation
+      VpcArn: !Ref VpcArnIdentifier
+      SubnetArns:
+        - !Ref SubnetArnIdentifiers
+      Tags:
+        - Key: Name
+          Value: !Sub "VpcAttachment/${EdgeLocation}/${SegmentId}"
+        - Key: segment
+          Value: !Ref SegmentId
+
+  VpcAttachmentIdentifier:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/VpcAttachmentIdentifier/cne-${EdgeLocation}/segment-${SegmentId}"
+      Type: String
+      Value: !Ref VpcAttachment
+
+Outputs:
+  VpcAttachment:
+    Value: !Ref VpcAttachment
+    Description: VPC Attachment Id
+
