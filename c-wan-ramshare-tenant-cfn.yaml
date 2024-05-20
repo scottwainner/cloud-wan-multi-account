@@ -5,10 +5,10 @@ Parameters:
     Default: "CustomerAccountNumber"
   CoreNetworkResourceArns:
     Type: String
-    Default: "arn:aws:networkmanager::<AccountNumber>:core-network/<CoreNetworkID>"
+    Default: "arn:aws:networkmanager::<HostedAccountNumber>:core-network/<CoreNetworkID>"
   CustomerName:
     Type: String
-    Default: "HostedAcct-Tenant-<x>"
+    Default: "HostedAcct-Tenant-Name"
 
 Resources:
   CoreNetworkShare:
