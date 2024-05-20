@@ -6,15 +6,15 @@ Parameters:
   CoreNetworkIdentifier:
     Type: String
     Description: Core Network Identifier
-    Default: core-network-04144a56d246ae013
+    Default: "core-network-<id>"
   VpcArnIdentifier:
     Type: String
     Description: VPC Arn
-    Default: arn:aws:ec2:us-east-1:557514342934:vpc/vpc-2e67bf53
+    Default: arn:aws:ec2:<region>:<CustomerAccountNumber>:vpc/<vpc-id>
   SubnetArnIdentifiers:
     Type: String
     Description: Subnet Arn
-    Default: arn:aws:ec2:us-east-1:557514342934:subnet/subnet-d4a629b2
+    Default: arn:aws:ec2:<region>:<CustomerAccountNumber>:subnet/<subnet-id>
   SegmentId:
     Type: String
     Description: Segment for VpcAttachment
@@ -22,11 +22,11 @@ Parameters:
       - "sharedservices"
       - "customerdata"
       - "management"
-    Default: sharedservices
+    Default: customerdata
   EdgeLocation:
     Type: String
     Description: CNE Location
-    Default: us-east-1
+    Default: <region>
 
 Resources:
   VpcAttachment:
