@@ -5,15 +5,15 @@ Parameters:
   VpcAttachment:
     Type: String
     Description: Attachment ID of the VpcAttachment
-    Default: attachment-07af16550f2a97d3e
+    Default: attachment-<id>
   CoreNetworkEdge:
     Type: String
     Description: Region where the CNE Resides
-    Default: us-east-1
+    Default: <region>
   CoreNetworkIdentifier:
     Type: String
     Description: CoreNetworkIdentifier
-    Default: core-network-04144a56d246ae013
+    Default: core-network-<id>
   SegmentName:
     Type: String
     Description: Segment Segment
@@ -36,7 +36,7 @@ Parameters:
   CnePeerAddress:
     Type: String
     Description: IP Address for CNE Peer
-    Default: 172.31.0.5
+    Default: <ip_v4_address>
   TunnelInsideCidr:
     Type: String
     Description: IP CIDR Assigned to Tunnel Interfaces 169.254.x.x/29
